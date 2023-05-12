@@ -9,32 +9,41 @@ public class RandomEvents : MonoBehaviour
     private int index;
     private string tagObject;
 
-    private GameObject[] prefabManager;
+    public GameObject playerSettings;
 
     //StepsEvent
     public AudioSource audioSource;
     private Coroutine stepsSound;
     private GameObject audioCapacity;
-    private Vector3 audioPosition;
-    private float timeStepsToEnable = 0f;
+    private float timeToEnable = 0.6f;
     private float timeStepsIncrement = 0.3f;
     private float timeBeforeDestroyAudio = 1.5f;
     private float generalTime = 9f;
 
     //StepInactive
-    private Coroutine timeDisableStepAudio;
-    private float timeScale = 1f;
+    private Coroutine timeDisableAudio;
+    private float timeScale = 300f;
 
     //SidePositionSetting
     [SerializeField] private Vector3 center;
     [SerializeField] private Vector3 size;
     private Vector3 centerRight;
-    private Vector3 centerLeft;
+
+    //ThunderEvent
+    public AudioSource thunderSource;
+    private Coroutine thunderSounds;
+    public AudioClip[] thunderTypes;
+    private GameObject[] thunderCapacity;
+    private float timePlayingThunder = 10f;
+    private int countOfTimes;
+
+    //SideThunderPositionSetting
+    private Vector3 centerThunder;
+    private Vector3 sizeThunder = new Vector3(100, 10, 100);
 
     private void Awake()
     {
         centerRight = new Vector3(center.x / 2, center.y / 2, center.z / 0.6f);
-        centerLeft = new Vector3(center.x / 2, center.y / 2, center.z / 5.4f);
     }
 
     private void OnTriggerStay(Collider other)
@@ -45,14 +54,22 @@ public class RandomEvents : MonoBehaviour
             return;
         }
 
-        index = UnityEngine.Random.Range(0, prefabsForTrigger.Length - 1);
+        index = Random.Range(0, prefabsForTrigger.Length - 1);
         tagObject = prefabsForTrigger[index].tag;
         switch (tagObject)
         {
             case ("triggerObjects/stepSound"):
-                if (stepsSound == null && timeDisableStepAudio == null)
+                if (stepsSound == null && timeDisableAudio == null)
                 {
+                    timeDisableAudio = StartCoroutine(TimeDisableAll());
                     stepsSound = StartCoroutine(StepRoutine());
+                }
+                break;
+            case ("triggerObjects/thunderSound"):
+                if (thunderSounds == null && timeDisableAudio == null)
+                {
+                    timeDisableAudio = StartCoroutine(TimeDisableAll());
+                    thunderSounds = StartCoroutine(ThunderRoutine());
                 }
                 break;
             default:
@@ -65,45 +82,60 @@ public class RandomEvents : MonoBehaviour
 
     }
 
-    private IEnumerator TimeDisableStep()
+    private IEnumerator TimeDisableAll()
     {
         WaitForSeconds timeToWait = new WaitForSeconds(timeScale);
-        for (int i = 0; i < 300; i++)
+        yield return timeToWait;
+
+        timeDisableAudio = null;
+    }
+
+    private IEnumerator ThunderRoutine()
+    {
+        yield return new WaitForSeconds(timeToEnable);
+        WaitForSeconds timeToWait = new WaitForSeconds(timePlayingThunder);
+        countOfTimes = Random.Range(4, 6);
+        Vector3 generalPosition = default;
+        while (0 < countOfTimes)
         {
+            centerThunder = playerSettings.transform.position;
+            generalPosition = centerThunder + new Vector3(UnityEngine.Random.Range(-sizeThunder.x / 2, sizeThunder.x / 2), UnityEngine.Random.Range(-sizeThunder.y, sizeThunder.y), UnityEngine.Random.Range(-sizeThunder.z / 2, sizeThunder.z / 2));
+            Instantiate(thunderSource, generalPosition, Quaternion.identity);
+            countOfTimes--;
+        }
+
+        yield return new WaitForSeconds(4f);
+
+        thunderCapacity = GameObject.FindGameObjectsWithTag("triggerObjects/thunderSound");
+        foreach (GameObject thunder in thunderCapacity)
+        {
+            thunder.GetComponent<AudioSource>().PlayOneShot(thunderTypes[Random.Range(0, thunderTypes.Length - 1)]);
             yield return timeToWait;
         }
-        timeDisableStepAudio = null;
+        foreach (GameObject thunder in thunderCapacity)
+        {
+            Destroy(thunder);
+        }
+        thunderSounds = null;
     }
 
     private IEnumerator StepRoutine()
     {
-        yield return new WaitForSeconds(timeStepsToEnable);
+        yield return new WaitForSeconds(timeToEnable);
         WaitForSeconds timeToWaitIncrement = new WaitForSeconds(timeStepsIncrement);
         WaitForSeconds timeToWaitDestroy = new WaitForSeconds(timeBeforeDestroyAudio);
         float timeElapse = 0;
         Vector3 positionRight = default;
-        Vector3 positionLeft = default;
         while (timeElapse < generalTime)
         {
-            int sidePosition = UnityEngine.Random.Range(1, 101);
-            if (sidePosition % 2 == 0)
-            {
-                positionRight = centerRight + new Vector3(UnityEngine.Random.Range(-size.x / 3, size.x / 3), UnityEngine.Random.Range(-size.y / 4, size.y / 4), UnityEngine.Random.Range(-size.z / 8, size.z / 8));
-            }
-            else
-            {
-                positionLeft = centerLeft + new Vector3(UnityEngine.Random.Range(-size.x / 3, size.x / 3), UnityEngine.Random.Range(-size.y / 4, size.y / 4), UnityEngine.Random.Range(-size.z / 8, size.z / 8));
-            }
-            audioPosition = sidePosition % 2 == 0 ? positionRight : positionLeft;
-            Instantiate(audioSource, audioPosition, Quaternion.identity);
+            positionRight = centerRight + new Vector3(UnityEngine.Random.Range(-size.x / 3, size.x / 3), UnityEngine.Random.Range(-size.y / 4, size.y / 4), UnityEngine.Random.Range(-size.z / 8, size.z / 8));
+            Instantiate(audioSource, positionRight, Quaternion.identity);
             yield return timeToWaitDestroy;
             audioCapacity = GameObject.FindGameObjectWithTag("triggerObjects/stepSound");
             Destroy(audioCapacity);
             timeElapse += 1.5f;
             yield return timeToWaitIncrement;
         }
-
-        timeDisableStepAudio = StartCoroutine(TimeDisableStep());
         stepsSound = null;
     }
 }

@@ -3,7 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - triggerObjects/ball
+  - triggerObjects/lamp
+  - triggerObjects/stepSound
+  - Trigger/TriggersManager
+  - triggerObjects/thunderSound
+  - Trigger/RandomEvents
   layers:
   - Default
   - TransparentFX
