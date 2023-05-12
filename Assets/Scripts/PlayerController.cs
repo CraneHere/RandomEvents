@@ -16,20 +16,15 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool canSprint = true;
     [SerializeField] private bool canJump = true;
     [SerializeField] private bool canCrouch = true;
-    [SerializeField] private bool canHeadBob = true;
     [SerializeField] private bool willSlideOnSlopes = true;
     [SerializeField] private bool canZoom = true;
-    [SerializeField] private bool canInteract = true;
     [SerializeField] private bool useFootstepsAudio = true;
-    [SerializeField] private bool useInGroundAudio = true;
-    [SerializeField] private bool useStamina = true;
         
     [Header("Controls")]
     [SerializeField] private KeyCode sprintKey = KeyCode.LeftShift;
     [SerializeField] private KeyCode jumpKey = KeyCode.Space;
     [SerializeField] private KeyCode crouchKey = KeyCode.C;
     [SerializeField] private KeyCode zoomKey = KeyCode.E;
-    [SerializeField] private KeyCode interactKey = KeyCode.Q;
  
     [Header("Move Parameters")]
     [SerializeField] private float walkSpeed = 3.0f;
@@ -43,27 +38,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField, Range(1, 180)] private float upperLockLimit = 80.0f;
     [SerializeField, Range(1, 180)] private float lowerLockLimit = 80.0f;
 
-    [Header("Health Parameters")]
-    [SerializeField] private float maxHealth = 100f;
-    [SerializeField] private float timeToRegenStarts = 3f;
-    [SerializeField] private float valueRegenIncrement = 0.1f;
-    [SerializeField] private float valueHealthIncrement = 1f;
-    private Coroutine regenRoutine;
-    private float currentHealth;
-    public static Action<float> OnDamage;
-    public static Action<float> OnHeal;
-    public static Action<float> OnTakeDamage;
-
-    [Header("Stamina Parameters")]
-    [SerializeField] private float maxStamina = 100f;
-    [SerializeField] private float staminaUseMultiplier = 5f;
-    [SerializeField] private float timeToRegenStaminaStarts = 5f;
-    [SerializeField] private float staminaRegenIncrement = 2f;
-    [SerializeField] private float staminaTimeIncrement = 0.1f;
-    private Coroutine staminaRoutine;
-    private float currentStamina;
-    public static Action<float> OnStaminaChange;
-
     [Header("Jumping Parametr")]
     [SerializeField] private float jumpForce = 8.0f;
     [SerializeField] private float gravity = 30.0f;
@@ -72,7 +46,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float crouchHeight = 0.5f;
     [SerializeField] private float standingHeight = 2f;
     [SerializeField] private float timeToCrouch = 0.25f;
-    [SerializeField] private float standingCenterPoint = 0;
     [SerializeField] private Vector3 crouchingCenter = new Vector3(0, 0.5f, 0);
     [SerializeField] private Vector3 standingCenter = new Vector3(0, 0, 0);
     private bool isCrouching;
@@ -89,27 +62,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float crouchStepSpeed = 1.5f;
     [SerializeField] private float sprintStepSpeed = 0.6f;
     [SerializeField] private AudioSource footstepsAudioSource;
-    [SerializeField] private AudioClip[] groundSounds = default;
-    [SerializeField] private AudioClip[] rockGroundSounds = default;
     [SerializeField] private AudioClip[] defaultSounds = default;
     private float footstepsTimer = 0;
     private float GetCurrentOffset => isSprinting ? sprintStepSpeed * baseStepSpeed : isCrouching ? crouchStepSpeed * baseStepSpeed : baseStepSpeed;
-
-    [Header("Interact Parameters")]
-    [SerializeField] private LayerMask interactionLayer = default;
-    [SerializeField] private Vector3 interactionRayPoint = default;
-    [SerializeField] private float interactionDistance = default;
-    private Interactable currentInteractable;
-
-    [Header("HeadBob Parameters")]
-    [SerializeField] private float walkBobSpeed = 14f;
-    [SerializeField] private float walkBobAmount = 0.05f;
-    [SerializeField] private float speedBobSpeed = 18f;
-    [SerializeField] private float speedBobAmount = 0.11f;
-    [SerializeField] private float crouchBobSpeed = 8f;
-    [SerializeField] private float crouchBobAmount = 0.025f;
-    private float defaultYPos = 0;
-    private float timer;
 
     //SLIDING PARAMETERS
     private Vector3 hitPointNormal;
@@ -139,25 +94,11 @@ public class PlayerController : MonoBehaviour
     private Vector2 currentInput; 
     private float rotationX;
 
-    private void OnEnable()
-    {
-        OnTakeDamage += ApplyDmg;
-
-    }
-
-    private void OnDisable()
-    {
-        OnTakeDamage -= ApplyDmg;
-    }
-
     private void Awake()
     {
         playerCamera = GetComponentInChildren<Camera>();
         characterController = GetComponent<CharacterController>();
-        defaultYPos = playerCamera.transform.localPosition.y;
         defaultFOV = playerCamera.fieldOfView;
-        currentHealth = maxHealth;
-        currentStamina = maxStamina;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -174,12 +115,7 @@ public class PlayerController : MonoBehaviour
         {
             HandleMovement();
             HandleMouseMovement();
-            
-            if (canHeadBob)
-            {
-                HandleHeadBob();
-            }
-
+         
             if (canJump)
             {
                 HandleJumping();
@@ -199,17 +135,6 @@ public class PlayerController : MonoBehaviour
             {
                 HandleFootsteps();
             }
-
-            if (canInteract)
-            {
-                HandleInteractCheck();
-                HandleInteractInput();
-            }
-
-            /*if (useStamina)
-            {
-                HandleStamina();
-            }*/
 
             ApplyFinalMovement();
         }  
@@ -236,82 +161,12 @@ public class PlayerController : MonoBehaviour
         transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lockSpeedX, 0);
     }
 
-    private void HandleHeadBob()
-    {
-        if (!characterController.isGrounded) return;
-
-        if (Mathf.Abs(moveDirection.x) > 0.1f || Mathf.Abs(moveDirection.z) > 0.1f)
-        {
-            timer += Time.deltaTime * (isCrouching ? crouchBobSpeed :
-                isSprinting ? speedBobSpeed : walkBobSpeed);
-
-            playerCamera.transform.localPosition = new Vector3(
-                playerCamera.transform.localPosition.x,
-                defaultYPos + Mathf.Sin(timer) * (isCrouching ? crouchBobAmount : isSprinting ? speedBobAmount : walkBobAmount),
-                playerCamera.transform.localPosition.z);
-        }
-    }
-
-    private void HandleInteractCheck()
-    {
-        if (Physics.Raycast(playerCamera.ViewportPointToRay(interactionRayPoint), out RaycastHit hit, interactionDistance))
-        {
-            if (hit.collider.gameObject.layer == 6 && (currentInteractable == null || hit.collider.gameObject.GetInstanceID() != currentInteractable.GetInstanceID()))
-            {
-                hit.collider.TryGetComponent(out currentInteractable);
-
-                if (currentInteractable)
-                {
-                    currentInteractable.OnFocus();
-                }
-            }
-        }
-        else if (currentInteractable)
-        {
-            currentInteractable.OnLoseFocus();
-            currentInteractable = null;
-        }
-    }
-
-    private void HandleInteractInput()
-    {
-        if (Input.GetKeyDown(interactKey) && currentInteractable != null && Physics.Raycast(playerCamera.ViewportPointToRay(interactionRayPoint), out RaycastHit hit, interactionDistance, interactionLayer))
-        {
-            currentInteractable.OnInteract();
-        }
-    }
-
     private void HandleJumping ()
     {
         if (isJumping && !isSliding)
         {
             moveDirection.y = jumpForce;
 
-        }
-    }
-
-    private void HandleStamina()
-    {
-        if (isSprinting && currentInput != Vector2.zero)
-        {
-            if (staminaRoutine != null)
-            {
-                StopCoroutine(staminaRoutine);
-                staminaRoutine = null;
-            }    
-
-            currentStamina -= staminaUseMultiplier * Time.deltaTime;
-
-            if (currentStamina < 0) currentStamina = 0;
-
-            OnStaminaChange?.Invoke(currentStamina);
-
-            if (currentStamina <= 0) canSprint = false;
-        }
-
-        if (!isSprinting && currentStamina < maxStamina && staminaRoutine == null)
-        {
-            staminaRoutine = StartCoroutine(StaminaRegen());
         }
     }
 
@@ -360,12 +215,7 @@ public class PlayerController : MonoBehaviour
             {
                 switch (hit.collider.tag)
                 {
-                    case "footsteps/ground":
-                        footstepsAudioSource.PlayOneShot(groundSounds[UnityEngine.Random.Range(0, groundSounds.Length - 1)]);
-                        break;
-                    case "footsteps/rockGround":
-                        footstepsAudioSource.PlayOneShot(rockGroundSounds[UnityEngine.Random.Range(0, rockGroundSounds.Length - 1)]);
-                        break;
+
                     default:
                         footstepsAudioSource.PlayOneShot(defaultSounds[UnityEngine.Random.Range(0, defaultSounds.Length - 1)]);
                         break;
@@ -374,35 +224,6 @@ public class PlayerController : MonoBehaviour
 
             footstepsTimer = GetCurrentOffset;
         }
-    }
-
-    private void ApplyDmg(float dmg)
-    {
-        currentHealth -= dmg;
-        OnDamage?.Invoke(currentHealth);
-
-        if (currentHealth <= 0)
-        {
-            KillPlayer();
-        }
-        else if (regenRoutine != null)
-        {
-            StopCoroutine(regenRoutine);
-        }
-
-        regenRoutine = StartCoroutine(HealthRegen());
-    }
-
-    private void KillPlayer()
-    {
-        currentHealth = 0;
-
-        if (regenRoutine != null)
-        {
-            StopCoroutine(regenRoutine);
-        }
-
-        print("dead");
     }
 
     private void ApplyFinalMovement()
@@ -466,46 +287,5 @@ public class PlayerController : MonoBehaviour
         isCrouching = !isCrouching;
 
         duringCrouchAnimation = false;
-    }
-
-    private IEnumerator HealthRegen()
-    {
-        yield return new WaitForSeconds(timeToRegenStarts);
-        WaitForSeconds timeToWait = new WaitForSeconds(valueRegenIncrement);
-
-        while (currentHealth < maxHealth)
-        {
-            currentHealth += valueHealthIncrement;
-
-            OnHeal?.Invoke(currentHealth);
-
-            if (currentHealth > maxHealth) currentHealth = maxHealth;
-            yield return timeToWait;
-        }
-
-        regenRoutine = null;
-    }
-
-    private IEnumerator StaminaRegen()
-    {
-        yield return new WaitForSeconds(timeToRegenStaminaStarts);
-        WaitForSeconds timeToWait = new WaitForSeconds(staminaTimeIncrement);
-
-        while (currentStamina < maxStamina)
-        {
-            if (currentStamina >= 30)
-            {
-                canSprint = true;
-            }
-            currentStamina += staminaRegenIncrement;
-
-            if (currentStamina > maxStamina) currentStamina = maxStamina;
-
-            OnStaminaChange?.Invoke(currentStamina);
-
-            yield return timeToWait;
-        }
-
-        staminaRoutine = null;
     }
 }
