@@ -60,8 +60,6 @@ public class testRandom : MonoBehaviour
         else index_element = Random.Range(0, match_list.Length - 1);
 
         Instantiate(events[index_element], events[index_element].transform.position, Quaternion.identity);
-
-        for ()
     }
 
     private void OnTriggerExit()
