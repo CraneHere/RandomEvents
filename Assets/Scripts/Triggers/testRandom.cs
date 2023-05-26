@@ -7,7 +7,7 @@ using UnityEngine;
 public class testRandom : MonoBehaviour
 {
     
-    private float[] chances = { 0.5f, 0.5f, 0.5f };
+    private float[] chances = { 0.10f, 0.45f, 0.95f };
     private int[] match_list = new int[]{ 0, 0, 0 };
     private float random_value;
 
@@ -48,7 +48,6 @@ public class testRandom : MonoBehaviour
                     }
                     float first = UnityEngine.Random.value;
                     index_find_number = (int)(count_random_number * first);
-                    print(index_find_number);
                     repeat_chances.Clear();
                 }
                 match_list[index_find_number]++;
@@ -64,7 +63,6 @@ public class testRandom : MonoBehaviour
 
     private float FindNumberMax(float[] chances, float min, float max, float random_value) {
         chances = (float[])chances.Clone();
-        System.Array.Sort(chances);
 
         float difference = 100;
         float cur_difference;
@@ -75,10 +73,10 @@ public class testRandom : MonoBehaviour
         }
 
         for (int i = 0; i < chances.Length; i++) {
-            if (chances[i] == min) {
+            if (random_value <= min) {
                 continue;
             }
-            cur_difference = Mathf.Abs(max - chances[i]);
+            cur_difference = Mathf.Abs(random_value - chances[i]);
             if (cur_difference < difference) {
                 difference = cur_difference;
                 final_number = chances[i];
