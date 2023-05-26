@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,62 +6,87 @@ using UnityEngine;
 
 public class testRandom : MonoBehaviour
 {
-    // Chances Setting
-    private float[] chances = { 0.28f, 0.5f, 0.6f };
-    private int[] match_list = { 0, 0, 0 };
+    
+    private float[] chances = { 0.5f, 0.5f, 0.5f };
+    private int[] match_list = new int[]{ 0, 0, 0 };
     private float random_value;
 
     public GameObject[] events;
-
-    int index_element;
-    // Start is called before the first frame update
-    private void OnTriggerEnter()
+    
+    private void OnTriggerStay()
     {
-        float more_max = Mathf.Max(chances.ToArray());
-        float less_min = Mathf.Min(chances.ToArray());
-        int cnt_from_max = 1;
-        int cnt_from_min = 0;
+        ArrayList repeat_chances = new();
+        float max = Mathf.Max(chances.ToArray());
+        float min = Mathf.Min(chances.ToArray());
         int len_chances = chances.Length;
+        float number_of_random;
+        int index_find_number;
+        int final_index;
 
-        for (int i = 0; i < chances.Length * 2; ++i)
+        for (int i = 0; i < len_chances * 2; ++i)
         {
-            random_value = Random.value;
-            if (random_value >= more_max)
+            random_value = UnityEngine.Random.value;
+
+            if (random_value >= min)
             {
-                match_list[len_chances - cnt_from_max] += 1;
-                cnt_from_max++;
-                if (cnt_from_max == len_chances) cnt_from_max = 1;
-            }
-            if (random_value <= less_min)
-            {
-                match_list[cnt_from_min] += 1;
-                cnt_from_min++;
-                if (cnt_from_min == len_chances) cnt_from_min = 0;
-            }
-            else
-            {
-                for (int recalculation = 0; recalculation < chances.Length; ++recalculation)
+                number_of_random = FindNumberMax(chances, min, max, random_value);
+
+                int count_random_number = chances.Count(x => x == number_of_random);
+
+                if (count_random_number == 1)
                 {
-                    if (random_value > chances[recalculation])
-                    {
-                        match_list[recalculation] += 1;
-                        match_list[recalculation + 1] += 1;
-                        break;
-                    }
+                    index_find_number = System.Array.IndexOf(chances, number_of_random);
                 }
+                else
+                {
+                    for (int i_random = 0; i_random < len_chances; i_random++)
+                    {
+                        if (chances[i_random] == number_of_random)
+                        {
+                            repeat_chances.Add(i_random);
+                        }
+                    }
+                    float first = UnityEngine.Random.value;
+                    index_find_number = (int)(count_random_number * first);
+                    print(index_find_number);
+                    repeat_chances.Clear();
+                }
+                match_list[index_find_number]++;
             }
         }
 
-        int max_number_from_list = Mathf.Max(match_list.ToArray());
-        int count_max_number = match_list.Count(x => x == max_number_from_list);
-        if (count_max_number == 1)
-        {
-            index_element = System.Array.IndexOf(match_list, max_number_from_list);
-        }
-        else index_element = Random.Range(0, match_list.Length - 1);
+        final_index = System.Array.IndexOf(match_list, match_list.Max());
 
-        Instantiate(events[index_element], events[index_element].transform.position, Quaternion.identity);
+        Instantiate(events[final_index], events[final_index].transform.position, Quaternion.identity);
+
+        match_list = new int[match_list.Length];
     }
+
+    private float FindNumberMax(float[] chances, float min, float max, float random_value) {
+        chances = (float[])chances.Clone();
+        System.Array.Sort(chances);
+
+        float difference = 100;
+        float cur_difference;
+        float final_number = 0;
+
+        if (random_value > max) {
+            return max;
+        }
+
+        for (int i = 0; i < chances.Length; i++) {
+            if (chances[i] == min) {
+                continue;
+            }
+            cur_difference = Mathf.Abs(max - chances[i]);
+            if (cur_difference < difference) {
+                difference = cur_difference;
+                final_number = chances[i];
+            }
+        }
+
+        return final_number;
+    } 
 
     private void OnTriggerExit()
     {

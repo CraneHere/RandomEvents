@@ -1,12 +1,14 @@
 ﻿<Properties StartupConfiguration="{D188E933-F0D6-E693-EEDF-4A809119450A}|">
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Triggers/RandomEvents.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Triggers/testRandom.cs">
     <Files>
       <File FileName="Assets/Scripts/PlayerController.cs" />
-      <File FileName="Assets/Scripts/Triggers/RandomEvents.cs" Line="25" Column="34" />
+      <File FileName="Assets/Scripts/Triggers/RandomEvents.cs" Line="20" Column="40" />
+      <File FileName="Assets/Scripts/Triggers/testRandom.cs" Line="43" Column="22" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -14,7 +16,9 @@
           <Node name="RandomEvents">
             <Node name="Assets" expanded="True">
               <Node name="Scripts" expanded="True">
-                <Node name="Triggers" expanded="True" />
+                <Node name="Triggers" expanded="True">
+                  <Node name="testRandom.cs" selected="True" />
+                </Node>
               </Node>
             </Node>
           </Node>
@@ -22,7 +26,6 @@
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="b8193a96-16ba-4b45-88c9-2dc98bcb5797" />
-  <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="a9bda25a-bc75-45e0-868a-b2b2fd6fe13d" />
 </Properties>
