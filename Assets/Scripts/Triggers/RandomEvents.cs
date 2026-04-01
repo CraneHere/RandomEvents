@@ -131,7 +131,7 @@ public class RandomEvents : MonoBehaviour
             positionRight = centerRight + new Vector3(UnityEngine.Random.Range(-size.x / 3, size.x / 3), UnityEngine.Random.Range(-size.y / 4, size.y / 4), UnityEngine.Random.Range(-size.z / 8, size.z / 8));
             Instantiate(audioSource, positionRight, Quaternion.identity);
             yield return timeToWaitDestroy;
-            audioCapacity = GameObject.FindGameObjectWithTag("triggerObjects/stepSound");
+            audioCapacity = GameObject.FindGameObjectWithTag("triggerObjects/stepSound" );
             Destroy(audioCapacity);
             timeElapse += 1.5f;
             yield return timeToWaitIncrement;
