@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Rendering.PostProcessing;
 
 public class EventManager : MonoBehaviour
 {
@@ -40,21 +39,22 @@ public class EventManager : MonoBehaviour
         }
     }
 
-    private void TriggerEnter()
+    public void TriggerEvent(Vector3 spawnPosition)
     {
         int idGroup = groupSelector.SelectIndex();
-
-        int idEvent = eventSelectors[idGroup].SelectIndex();
-
-        GameObject eventPrefab = groups[idGroup].randomEvents[idEvent].prefab;
-
-        Instantiate(eventPrefab, eventPrefab.transform.position, Quaternion.identity);
-
-        eventUIManager.RefreshUI();
+        TriggerGroup(idGroup, spawnPosition);
     }
 
-    private void OnTriggerEnter()
+    public void TriggerGroup(int groupIndex, Vector3 spawnPosition)
     {
-        TriggerEnter();
+        int idEvent = eventSelectors[groupIndex].SelectIndex();
+
+        GameObject eventPrefab = groups[groupIndex].randomEvents[idEvent].prefab;
+        Instantiate(eventPrefab, spawnPosition, Quaternion.identity);
+
+        if (eventUIManager != null)
+        {
+            eventUIManager.RefreshUI();
+        }
     }
 }

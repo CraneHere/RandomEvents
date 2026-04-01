@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 214847177b4798841bd200276f3f9b64, type: 3}
+  m_Name: WeatherGroup
+  m_EditorClassIdentifier: Assembly-CSharp::GroupRandomEvents
+  randomEvents:
+  - {fileID: 11400000, guid: dbdf7d53f6fd37443987d9a6f8dc7a74, type: 2}
+  - {fileID: 11400000, guid: ab0eefd8f7c5507499ce1b9f34afd6e3, type: 2}
+  - {fileID: 11400000, guid: 58d1c9a9f8f0bcd43b340ce820283d34, type: 2}
+  weight: 79

@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 214847177b4798841bd200276f3f9b64, type: 3}
-  m_Name: WeatherGroup
+  m_Name: RandomThunders
   m_EditorClassIdentifier: Assembly-CSharp::GroupRandomEvents
   randomEvents:
-  - {fileID: 11400000, guid: dbdf7d53f6fd37443987d9a6f8dc7a74, type: 2}
-  - {fileID: 11400000, guid: ab0eefd8f7c5507499ce1b9f34afd6e3, type: 2}
-  - {fileID: 11400000, guid: 58d1c9a9f8f0bcd43b340ce820283d34, type: 2}
-  weight: 35
+  - {fileID: 11400000, guid: ef6fb5f48d050ad4ea3011592c6ed0d8, type: 2}
+  - {fileID: 11400000, guid: 7740dbb15d5419141a63fbe28c5112da, type: 2}
+  - {fileID: 11400000, guid: 77f40ae6ba94b3b41a34e54391d915ed, type: 2}
+  - {fileID: 11400000, guid: 6f0af9d015bd0794a8230419e9e2ce61, type: 2}
+  weight: 23

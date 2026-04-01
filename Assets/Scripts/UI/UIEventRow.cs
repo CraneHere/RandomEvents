@@ -11,7 +11,7 @@ public class UIEventRow : MonoBehaviour
     public void SetData(string name, float percent)
     {
         nameText.text = name;
-        percentText.text = percent + "%";
+        percentText.text = percent.ToString("F1") + "%";
     }
 
     public void SetClickAction(UnityEngine.Events.UnityAction action)
