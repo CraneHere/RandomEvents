@@ -1,16 +1,3 @@
-%YAML 1.1
-%TAG !u! tag:unity3d.com,2011:
---- !u!114 &11400000
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63cada5c61e73e9408f5b2cc6111030a, type: 3}
-  m_Name: Thunder2
-  m_EditorClassIdentifier: Assembly-CSharp::RandomEvent
-  baseWeight: 25
-  prefab: {fileID: 1648050940323902094, guid: 5dd291db2b73485409f7fd1be0f28c9a, type: 3}
+version https://git-lfs.github.com/spec/v1
+oid sha256:688bf38353eecf1c8c3fb7fcd7d1c5e5d2d4a1b5f44f7bb5c99164464cc8dc9a
+size 567

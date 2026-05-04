@@ -33,6 +33,13 @@ public class WeightedSelector
 
     public int SelectIndex()
     {
+        int index = RollIndex();
+        ApplyPenalty(index);
+        return index;
+    }
+
+    public int RollIndex()
+    {
         float sumWeights = weights.Sum();
         float cumulative = 0;
 
@@ -43,7 +50,6 @@ public class WeightedSelector
             cumulative += weights[i];
             if (cumulative >= randomValue)
             {
-                ChancesRecount(i);
                 return i;
             }
         }
@@ -51,7 +57,7 @@ public class WeightedSelector
         return 0;
     }
 
-    private void ChancesRecount(int indexItem)
+    public void ApplyPenalty(int indexItem)
     {
         weights[indexItem] -= pen;
         float newPen = pen / (weights.Length - 1);

@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private KeyCode jumpKey = KeyCode.Space;
     [SerializeField] private KeyCode crouchKey = KeyCode.C;
     [SerializeField] private KeyCode zoomKey = KeyCode.E;
+    [SerializeField] private KeyCode unlockCursorKey = KeyCode.Escape;
  
     [Header("Move Parameters")]
     [SerializeField] private float walkSpeed = 3.0f;
@@ -99,8 +100,36 @@ public class PlayerController : MonoBehaviour
         playerCamera = GetComponentInChildren<Camera>();
         characterController = GetComponent<CharacterController>();
         defaultFOV = playerCamera.fieldOfView;
+        LockCursor();
+    }
+
+    private void LockCursor()
+    {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        CanMove = true;
+    }
+
+    private void UnlockCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        CanMove = false;
+    }
+
+    private void HandleCursorToggle()
+    {
+        if (Input.GetKeyDown(unlockCursorKey))
+        {
+            if (Cursor.lockState == CursorLockMode.Locked)
+            {
+                UnlockCursor();
+            }
+            else
+            {
+                LockCursor();
+            }
+        }
     }
 
     void Start()
@@ -111,6 +140,8 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        HandleCursorToggle();
+
         if (CanMove)
         {
             HandleMovement();

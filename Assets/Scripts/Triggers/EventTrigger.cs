@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEngine;
 
 public class EventTrigger : MonoBehaviour
@@ -6,33 +5,45 @@ public class EventTrigger : MonoBehaviour
     [SerializeField] EventManager eventManager;
     [SerializeField] GroupRandomEvents[] allowedGroups;
 
-    private WeightedSelector groupSelector;
     private int[] groupIndices;
+    private bool playerInside = false;
 
     void Start()
     {
-        float[] weights = new float[allowedGroups.Length];
         groupIndices = new int[allowedGroups.Length];
-
         for (int i = 0; i < allowedGroups.Length; i++)
         {
-            weights[i] = allowedGroups[i].weight;
             groupIndices[i] = System.Array.IndexOf(eventManager.groups, allowedGroups[i]);
         }
-
-        groupSelector = new WeightedSelector(weights, eventManager.minWeight, eventManager.maxWeight);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("Player"))
+        if (!other.CompareTag("Player")) return;
+        if (playerInside) return;
+
+        playerInside = true;
+        for (int i = 0; i < groupIndices.Length; i++)
         {
-            return;
+            if (groupIndices[i] >= 0)
+            {
+                eventManager.EnableGroup(groupIndices[i], this);
+            }
         }
+    }
 
-        int localIndex = groupSelector.SelectIndex();
-        int globalIndex = groupIndices[localIndex];
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+        if (!playerInside) return;
 
-        eventManager.TriggerGroup(globalIndex, transform.position);
+        playerInside = false;
+        for (int i = 0; i < groupIndices.Length; i++)
+        {
+            if (groupIndices[i] >= 0)
+            {
+                eventManager.DisableGroup(groupIndices[i], this);
+            }
+        }
     }
 }

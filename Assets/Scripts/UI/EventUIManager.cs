@@ -15,22 +15,51 @@ public class EventUIManager : MonoBehaviour
 
     void Start()
     {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
         for (int i = 0; i < eventManager.groups.Length; i++)
         {
             GameObject row = Instantiate(groupRowPrefab, leftPanel);
             UIEventRow uiRow = row.GetComponent<UIEventRow>();
 
-            float percent = eventManager.groupSelector.GetWeightPercent(i);
-            uiRow.SetData(eventManager.groups[i].name, percent);
+            uiRow.SetData(eventManager.groups[i].name, GetGroupStatus(i));
 
             int index = i;
             uiRow.SetClickAction(() => OnGroupClicked(index));
 
             groupRows.Add(uiRow);
         }
+    }
+
+    void Update()
+    {
+        for (int i = 0; i < groupRows.Count; i++)
+        {
+            groupRows[i].SetStatusText(GetGroupStatus(i));
+        }
+    }
+
+    private string GetGroupStatus(int groupIndex)
+    {
+        if (!eventManager.IsGroupAvailable(groupIndex))
+        {
+            return "LOCK " + Mathf.CeilToInt(eventManager.GetCooldownRemaining(groupIndex)) + "s";
+        }
+
+        if (eventManager.IsGroupBlockedByExclusion(groupIndex))
+        {
+            return "EXCL";
+        }
+
+        if (!eventManager.IsGroupConditionMet(groupIndex))
+        {
+            return "COND";
+        }
+
+        if (!eventManager.IsGroupScheduled(groupIndex))
+        {
+            return "IDLE";
+        }
+
+        return "READY";
     }
 
     private void OnGroupClicked(int groupIndex)
@@ -51,7 +80,7 @@ public class EventUIManager : MonoBehaviour
             UIEventRow uiRow = row.GetComponent<UIEventRow>();
 
             float percent = eventManager.eventSelectors[groupIndex].GetWeightPercent(j);
-            uiRow.SetData(events[j].name, percent);
+            uiRow.SetData(events[j].name, percent.ToString("F1") + "%");
 
             eventRows.Add(uiRow);
         }
@@ -59,12 +88,6 @@ public class EventUIManager : MonoBehaviour
 
     public void RefreshUI()
     {
-        for (int i = 0; i < groupRows.Count; i++)
-        {
-            float percent = eventManager.groupSelector.GetWeightPercent(i);
-            groupRows[i].SetData(eventManager.groups[i].name, percent);
-        }
-
         if (selectedGroupIndex >= 0)
         {
             RandomEvent[] events = eventManager.groups[selectedGroupIndex].randomEvents;
@@ -72,7 +95,7 @@ public class EventUIManager : MonoBehaviour
             for (int j = 0; j < eventRows.Count; j++)
             {
                 float percent = eventManager.eventSelectors[selectedGroupIndex].GetWeightPercent(j);
-                eventRows[j].SetData(events[j].name, percent);
+                eventRows[j].SetData(events[j].name, percent.ToString("F1") + "%");
             }
         }
     }

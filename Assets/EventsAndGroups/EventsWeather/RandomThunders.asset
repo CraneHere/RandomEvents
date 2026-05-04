@@ -1,20 +1,3 @@
-%YAML 1.1
-%TAG !u! tag:unity3d.com,2011:
---- !u!114 &11400000
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 214847177b4798841bd200276f3f9b64, type: 3}
-  m_Name: RandomThunders
-  m_EditorClassIdentifier: Assembly-CSharp::GroupRandomEvents
-  randomEvents:
-  - {fileID: 11400000, guid: ef6fb5f48d050ad4ea3011592c6ed0d8, type: 2}
-  - {fileID: 11400000, guid: 7740dbb15d5419141a63fbe28c5112da, type: 2}
-  - {fileID: 11400000, guid: 77f40ae6ba94b3b41a34e54391d915ed, type: 2}
-  - {fileID: 11400000, guid: 6f0af9d015bd0794a8230419e9e2ce61, type: 2}
-  weight: 23
+version https://git-lfs.github.com/spec/v1
+oid sha256:ce4ff76ba3766b5463ab99a79108ed6dc41c402140a13e7ea573b8f25de42d74
+size 892
