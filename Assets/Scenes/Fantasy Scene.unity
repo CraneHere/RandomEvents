@@ -15,13 +15,13 @@ RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
   m_Fog: 1
-  m_FogColor: {r: 0.5471698, g: 0.5471698, b: 0.5471698, a: 1}
+  m_FogColor: {r: 0.3584906, g: 0.20461018, b: 0.20461018, a: 1}
   m_FogMode: 1
   m_FogDensity: 0.004
-  m_LinearFogStart: 541.64
-  m_LinearFogEnd: 1060
+  m_LinearFogStart: 910
+  m_LinearFogEnd: 1966.1
   m_AmbientSkyColor: {r: 1, g: 0.9716862, b: 0.9575472, a: 1}
-  m_AmbientEquatorColor: {r: 0.8207547, g: 0.44252625, b: 0.32907617, a: 1}
+  m_AmbientEquatorColor: {r: 0.4811321, g: 0.23537345, b: 0.16113387, a: 1}
   m_AmbientGroundColor: {r: 1, g: 0.20461842, b: 0, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 1
@@ -61546,7 +61546,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 669b4e36d543c094ebb14445099be800, type: 2}
   - {fileID: 11400000, guid: eb105347a357a7a418e6708026121f8b, type: 2}
   minWeight: 0.05
-  maxWeight: 0.6
+  maxWeight: 0.95
 --- !u!1001 &484902290
 PrefabInstance:
   m_ObjectHideFlags: 0

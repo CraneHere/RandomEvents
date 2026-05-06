@@ -4,14 +4,6 @@ using UnityEngine;
 public class GroupRandomEvents : ScriptableObject
 {
     public RandomEvent[] randomEvents;
-
-    [Header("Additional Prefabs")]
-    public GameObject[] additionalPrefabs;
-    public float additionalPrefabsDelay = 0f;
-    public float additionalPrefabsLifetime = 2f;
-    public bool spawnAbovePlayer = false;
-    public float spawnHeightAbovePlayer = 20f;
-
     [Header("Timing")]
     [Range(0f, 1f)] public float fireChance = 1f;
     public float activeDurationMin = 20f;
@@ -21,6 +13,15 @@ public class GroupRandomEvents : ScriptableObject
     public bool applyCooldownOnMiss = true;
     public bool isContinuous = false;
     public float continuousEventInterval = 8f;
+
+    [Header("Additional Events")]
+    public GameObject[] additionalEvents;
+    public float additionalEventsDelay = 0f;
+    public float additionalEventsLifetime = 2f;
+    public bool spawnAbovePlayer = false;
+    public float spawnHeightAbovePlayer = 20f;
+    public bool additionalEventsContinuous = false;
+    public float additionalEventsInterval = 8f;
 
     [Header("Conditions")]
     public bool requiresRainyWeather = false;

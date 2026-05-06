@@ -39,6 +39,11 @@ public class EventUIManager : MonoBehaviour
 
     private string GetGroupStatus(int groupIndex)
     {
+        if (eventManager.IsGroupActive(groupIndex))
+        {
+            return "ACTIVE " + Mathf.CeilToInt(eventManager.GetActiveRemaining(groupIndex)) + "s";
+        }
+
         if (!eventManager.IsGroupAvailable(groupIndex))
         {
             return "LOCK " + Mathf.CeilToInt(eventManager.GetCooldownRemaining(groupIndex)) + "s";

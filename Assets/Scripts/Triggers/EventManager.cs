@@ -13,10 +13,9 @@ public class EventManager : MonoBehaviour
     public float maxWeight = 0.6f;
 
     private float[] nextAvailableTime;
+    private float[] groupActiveUntilTime;
     private List<EventTrigger>[] activeTriggers;
     private Coroutine[] schedulers;
-
-    private float timeToEnable = 0.6f;
 
     private float GetRandomCooldown(GroupRandomEvents group)
     {
@@ -49,6 +48,7 @@ public class EventManager : MonoBehaviour
         }
 
         nextAvailableTime = new float[groups.Length];
+        groupActiveUntilTime = new float[groups.Length];
         activeTriggers = new List<EventTrigger>[groups.Length];
         schedulers = new Coroutine[groups.Length];
 
@@ -63,6 +63,16 @@ public class EventManager : MonoBehaviour
         return Time.time >= nextAvailableTime[groupIndex];
     }
 
+    public bool IsGroupActive(int groupIndex)
+    {
+        return Time.time < groupActiveUntilTime[groupIndex];
+    }
+
+    public float GetActiveRemaining(int groupIndex)
+    {
+        return Mathf.Max(0f, groupActiveUntilTime[groupIndex] - Time.time);
+    }
+
     public bool IsGroupBlockedByExclusion(int groupIndex)
     {
         GroupRandomEvents[] exclusives = groups[groupIndex].exclusiveWith;
@@ -72,7 +82,7 @@ public class EventManager : MonoBehaviour
         {
             int idx = System.Array.IndexOf(groups, exclusives[i]);
             if (idx < 0) continue;
-            if (!IsGroupAvailable(idx)) return true;
+            if (IsGroupActive(idx)) return true;
         }
 
         return false;
@@ -171,7 +181,13 @@ public class EventManager : MonoBehaviour
             float activeDuration = Mathf.Max(GetRandomActiveDuration(group), group.continuousEventInterval);
             float activeUntil = Time.time + activeDuration;
             nextAvailableTime[groupIndex] = activeUntil + Mathf.Max(0f, GetRandomCooldown(group));
+            groupActiveUntilTime[groupIndex] = activeUntil;
             StartCoroutine(ContinuousGroupRoutine(groupIndex, spawnPosition, activeUntil));
+
+            if (group.additionalEventsContinuous)
+            {
+                StartCoroutine(ContinuousEventRoutine(group, spawnPosition, activeUntil));
+            }
         }
         else
         {
@@ -179,10 +195,6 @@ public class EventManager : MonoBehaviour
             RandomEvent randomEvent = groups[groupIndex].randomEvents[idEvent];
 
             float lockDuration = GetRandomCooldown(groups[groupIndex]);
-            if (randomEvent.isTemporal)
-            {
-                lockDuration += randomEvent.eventDuration;
-            }
             nextAvailableTime[groupIndex] = Time.time + lockDuration;
 
             SpawnEvent(randomEvent, spawnPosition, group);
@@ -213,7 +225,7 @@ public class EventManager : MonoBehaviour
         {
             if (!IsGroupConditionMet(groupIndex))
             {
-                yield break;
+                break;
             }
 
             int idEvent = eventSelectors[groupIndex].SelectIndex();
@@ -223,6 +235,7 @@ public class EventManager : MonoBehaviour
             float interval = Mathf.Max(0.1f, group.continuousEventInterval);
             yield return new WaitForSeconds(interval);
         }
+
     }
 
     private void SpawnEvent(RandomEvent randomEvent, Vector3 spawnPosition)
@@ -232,38 +245,45 @@ public class EventManager : MonoBehaviour
 
     private void SpawnEvent(RandomEvent randomEvent, Vector3 spawnPosition, GroupRandomEvents group)
     {
-        if (randomEvent.isTemporal)
+        Instantiate(randomEvent.prefab, spawnPosition, Quaternion.identity);
+
+        if (group == null || !group.additionalEventsContinuous)
         {
-            StartCoroutine(EventRoutine(randomEvent, spawnPosition, group));
-            return;
+            SpawnAdditionalEvents(group, spawnPosition);
+        }
+    }
+
+    private IEnumerator ContinuousEventRoutine(GroupRandomEvents group, Vector3 spawnPosition, float activeUntilTime)
+    {
+        float interval = Mathf.Max(0.1f, group.additionalEventsInterval);
+
+        if (group.additionalEventsDelay > 0f)
+        {
+            yield return new WaitForSeconds(group.additionalEventsDelay);
         }
 
-        Instantiate(randomEvent.prefab, spawnPosition, Quaternion.identity);
-        SpawnAdditionalPrefabs(group, spawnPosition);
-    }
-
-    private IEnumerator EventRoutine(RandomEvent randomEvent, Vector3 spawnPosition, GroupRandomEvents group)
-    {
-        yield return new WaitForSeconds(timeToEnable);
-        Instantiate(randomEvent.prefab, spawnPosition, Quaternion.identity);
-        SpawnAdditionalPrefabs(group, spawnPosition);
-    }
-
-    private void SpawnAdditionalPrefabs(GroupRandomEvents group, Vector3 spawnPosition)
-    {
-        if (group == null || group.additionalPrefabs == null || group.additionalPrefabs.Length == 0) return;
-
-        if (group.additionalPrefabsDelay > 0f)
+        while (Time.time < activeUntilTime)
         {
-            StartCoroutine(AdditionalPrefabsRoutine(group, spawnPosition));
+            InstantiateAdditionalEvents(group, spawnPosition);
+            yield return new WaitForSeconds(interval);
+        }
+    }
+
+    private void SpawnAdditionalEvents(GroupRandomEvents group, Vector3 spawnPosition)
+    {
+        if (group == null || group.additionalEvents == null || group.additionalEvents.Length == 0) return;
+
+        if (group.additionalEventsDelay > 0f)
+        {
+            StartCoroutine(AdditionalEventsRoutine(group, spawnPosition));
         }
         else
         {
-            InstantiateAdditionalPrefabs(group, spawnPosition);
+            InstantiateAdditionalEvents(group, spawnPosition);
         }
     }
 
-    private void InstantiateAdditionalPrefabs(GroupRandomEvents group, Vector3 spawnPosition)
+    private void InstantiateAdditionalEvents(GroupRandomEvents group, Vector3 spawnPosition)
     {
         Vector3 position = spawnPosition;
 
@@ -276,20 +296,20 @@ public class EventManager : MonoBehaviour
             }
         }
 
-        for (int i = 0; i < group.additionalPrefabs.Length; i++)
+        for (int i = 0; i < group.additionalEvents.Length; i++)
         {
-            if (group.additionalPrefabs[i] == null) continue;
-            GameObject obj = Instantiate(group.additionalPrefabs[i], position, group.additionalPrefabs[i].transform.rotation);
-            if (group.additionalPrefabsLifetime > 0f)
+            if (group.additionalEvents[i] == null) continue;
+            GameObject obj = Instantiate(group.additionalEvents[i], position, group.additionalEvents[i].transform.rotation);
+            if (group.additionalEventsLifetime > 0f)
             {
-                Destroy(obj, group.additionalPrefabsLifetime);
+                Destroy(obj, group.additionalEventsLifetime);
             }
         }
     }
 
-    private IEnumerator AdditionalPrefabsRoutine(GroupRandomEvents group, Vector3 spawnPosition)
+    private IEnumerator AdditionalEventsRoutine(GroupRandomEvents group, Vector3 spawnPosition)
     {
-        yield return new WaitForSeconds(group.additionalPrefabsDelay);
-        InstantiateAdditionalPrefabs(group, spawnPosition);
+        yield return new WaitForSeconds(group.additionalEventsDelay);
+        InstantiateAdditionalEvents(group, spawnPosition);
     }
 }
