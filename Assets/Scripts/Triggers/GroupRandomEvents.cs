@@ -5,6 +5,13 @@ public class GroupRandomEvents : ScriptableObject
 {
     public RandomEvent[] randomEvents;
 
+    [Header("Additional Prefabs")]
+    public GameObject[] additionalPrefabs;
+    public float additionalPrefabsDelay = 0f;
+    public float additionalPrefabsLifetime = 2f;
+    public bool spawnAbovePlayer = false;
+    public float spawnHeightAbovePlayer = 20f;
+
     [Header("Timing")]
     [Range(0f, 1f)] public float fireChance = 1f;
     public float activeDurationMin = 20f;

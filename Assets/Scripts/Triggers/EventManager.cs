@@ -130,14 +130,12 @@ public class EventManager : MonoBehaviour
 
             if (IsGroupBlockedByExclusion(groupIndex))
             {
-                // Re-check frequently while another exclusive group is active.
                 yield return new WaitForSeconds(0.5f);
                 continue;
             }
 
             if (!IsGroupConditionMet(groupIndex))
             {
-                // Wait until condition becomes valid (for example, rainy weather).
                 yield return new WaitForSeconds(0.5f);
                 continue;
             }
@@ -149,7 +147,6 @@ public class EventManager : MonoBehaviour
                     nextAvailableTime[groupIndex] = Time.time + Mathf.Max(0f, GetRandomCooldown(group));
                     continue;
                 }
-                // No cooldown on miss: prevent tight loop.
                 yield return null;
                 continue;
             }
@@ -188,7 +185,7 @@ public class EventManager : MonoBehaviour
             }
             nextAvailableTime[groupIndex] = Time.time + lockDuration;
 
-            SpawnEvent(randomEvent, spawnPosition);
+            SpawnEvent(randomEvent, spawnPosition, group);
         }
 
         if (eventUIManager != null)
@@ -221,7 +218,7 @@ public class EventManager : MonoBehaviour
 
             int idEvent = eventSelectors[groupIndex].SelectIndex();
             RandomEvent randomEvent = group.randomEvents[idEvent];
-            SpawnEvent(randomEvent, spawnPosition);
+            SpawnEvent(randomEvent, spawnPosition, group);
 
             float interval = Mathf.Max(0.1f, group.continuousEventInterval);
             yield return new WaitForSeconds(interval);
@@ -230,18 +227,69 @@ public class EventManager : MonoBehaviour
 
     private void SpawnEvent(RandomEvent randomEvent, Vector3 spawnPosition)
     {
+        SpawnEvent(randomEvent, spawnPosition, null);
+    }
+
+    private void SpawnEvent(RandomEvent randomEvent, Vector3 spawnPosition, GroupRandomEvents group)
+    {
         if (randomEvent.isTemporal)
         {
-            StartCoroutine(EventRoutine(randomEvent, spawnPosition));
+            StartCoroutine(EventRoutine(randomEvent, spawnPosition, group));
             return;
         }
 
         Instantiate(randomEvent.prefab, spawnPosition, Quaternion.identity);
+        SpawnAdditionalPrefabs(group, spawnPosition);
     }
 
-    private IEnumerator EventRoutine(RandomEvent randomEvent, Vector3 spawnPosition)
+    private IEnumerator EventRoutine(RandomEvent randomEvent, Vector3 spawnPosition, GroupRandomEvents group)
     {
         yield return new WaitForSeconds(timeToEnable);
         Instantiate(randomEvent.prefab, spawnPosition, Quaternion.identity);
+        SpawnAdditionalPrefabs(group, spawnPosition);
+    }
+
+    private void SpawnAdditionalPrefabs(GroupRandomEvents group, Vector3 spawnPosition)
+    {
+        if (group == null || group.additionalPrefabs == null || group.additionalPrefabs.Length == 0) return;
+
+        if (group.additionalPrefabsDelay > 0f)
+        {
+            StartCoroutine(AdditionalPrefabsRoutine(group, spawnPosition));
+        }
+        else
+        {
+            InstantiateAdditionalPrefabs(group, spawnPosition);
+        }
+    }
+
+    private void InstantiateAdditionalPrefabs(GroupRandomEvents group, Vector3 spawnPosition)
+    {
+        Vector3 position = spawnPosition;
+
+        if (group.spawnAbovePlayer)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                position = player.transform.position + Vector3.up * group.spawnHeightAbovePlayer;
+            }
+        }
+
+        for (int i = 0; i < group.additionalPrefabs.Length; i++)
+        {
+            if (group.additionalPrefabs[i] == null) continue;
+            GameObject obj = Instantiate(group.additionalPrefabs[i], position, group.additionalPrefabs[i].transform.rotation);
+            if (group.additionalPrefabsLifetime > 0f)
+            {
+                Destroy(obj, group.additionalPrefabsLifetime);
+            }
+        }
+    }
+
+    private IEnumerator AdditionalPrefabsRoutine(GroupRandomEvents group, Vector3 spawnPosition)
+    {
+        yield return new WaitForSeconds(group.additionalPrefabsDelay);
+        InstantiateAdditionalPrefabs(group, spawnPosition);
     }
 }
