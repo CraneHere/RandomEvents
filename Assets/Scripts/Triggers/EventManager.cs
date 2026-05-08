@@ -245,7 +245,12 @@ public class EventManager : MonoBehaviour
 
     private void SpawnEvent(RandomEvent randomEvent, Vector3 spawnPosition, GroupRandomEvents group)
     {
-        Instantiate(randomEvent.prefab, spawnPosition, Quaternion.identity);
+        GameObject obj = Instantiate(randomEvent.prefab, spawnPosition, Quaternion.identity);
+
+        if (group != null && group.continuousEventInterval > 0f)
+        {
+            Destroy(obj, group.continuousEventInterval);
+        }
 
         if (group == null || !group.additionalEventsContinuous)
         {
